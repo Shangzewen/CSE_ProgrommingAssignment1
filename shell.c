@@ -249,15 +249,44 @@ int shellExecuteInput(char **args)
   /** TASK 3 **/
 
   // 1. Check if args[0] is NULL. If it is, an empty command is entered, return 1
+  if(args[0]== NULL){
+    return 1;
+  }
   // 2. Otherwise, check if args[0] is in any of our builtin_commands, and that it is NOT cd, help, exit, or usage.
+  for(int i=4;i<=11;i++){
+    while(args[0]==builtin_commands[i]){
+      int address;
+      address = fork();
+      if (address <0){
+        printf("fork unsuccessful");
+      }
+      else if (address == 0){
+        builtin_commandFunc[i](args);
+        exit(1);
+
+        }
+        else if(address>0){
+          int status;
+          pid_t child_return_value = waitpid(address,&status,WUNTRACED);
+          printf("fork worked, waiting for child");
+          return child_return_value;
+        }
+
+      }
+
+
+    }
+    printf(" command doesn't exist");
+    return 1;
+
+    
+    
+  }
   // 3. If conditions in (2) are satisfied, perform fork(). Check if fork() is successful.
   // 4. For the child process, execute the appropriate functions depending on the command in args[0]. Pass char ** args to the function.
   // 5. For the parent process, wait for the child process to complete and fetch the child's return value.
   // 6. Return the child's return value to the caller of shellExecuteInput
   // 7. If args[0] is not in builtin_command, print out an error message to tell the user that command doesn't exist and return 1
-
-  return 1;
-}
 
 /**
    Read line from stdin, return it to the Loop function to tokenize it
@@ -361,16 +390,15 @@ int main(int argc, char **argv)
    
 //  char* line = shellReadLine();
 //  printf("The fetched line is : %s \n", line);
- printf("Shell Run successful. Running now: \n");
+printf("Shell Run successful. Running now: \n");
  
  char* line = shellReadLine();
  printf("The fetched line is : %s \n", line);
- 
  char** args = shellTokenizeInput(line);
  printf("The first token is %s \n", args[0]);
  printf("The second token is %s \n", args[1]);
  
+ shellExecuteInput(args);
+ 
  return 0;
-
-  return 0;
 }
