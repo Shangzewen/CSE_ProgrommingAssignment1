@@ -254,7 +254,7 @@ int shellExecuteInput(char **args)
   }
   // 2. Otherwise, check if args[0] is in any of our builtin_commands, and that it is NOT cd, help, exit, or usage.
   for(int i=4;i<=11;i++){
-    while(args[0]==builtin_commands[i]){
+    if(strcmp(args[0],builtin_commands[i])==0){
       int address;
       address = fork();
       if (address <0){
