@@ -14,6 +14,11 @@ int shellFind(char **args)
   // 3. A successful execvp never returns, while a failed execvp returns -1
   // 4. Print some kind of error message if it returns -1
   // 5. return 1 to the caller of shellFind if execvp fails to allow loop to continue
+  int returnVal = execvp("/Users/huaihaizi/Desktop/PA1/shellPrograms/find", args);
+  if (returnVal ==-1)
+  {
+    printf("It did not work!\n");
+  }
 
   return 1;
 }
@@ -32,6 +37,11 @@ int shellDisplayFile(char **args)
   // 4. Print some kind of error message if it returns -1
   // 5. return 1 to the caller of shellDisplayFile if execvp fails to allow loop to continue
 
+  int returnVal = execvp("/Users/huaihaizi/Desktop/PA1/shellPrograms/display", args);
+  if (returnVal < 0)
+  {
+    printf("It did not work!\n");
+  }
   return 1;
 }
 
@@ -50,6 +60,11 @@ int shellListDirAll(char **args)
   // 4. Print some kind of error message if it returns -1
   // 5. return 1 to the caller of shellListDirAll if execvp fails to allow loop to continue
 
+  int returnVal = execvp("/Users/huaihaizi/Desktop/PA1/shellPrograms/listdirall", args);
+  if (returnVal < 0)
+  {
+    printf("It did not work!\n");
+  }
   return 1;
 }
 
@@ -66,7 +81,11 @@ int shellListDir(char **args)
   // 3. A successful execvp never returns, while a failed execvp returns -1
   // 4. Print some kind of error message if it returns -1
   // 5. return 1 to the caller of shellListDir
-
+  int returnVal = execvp("/Users/huaihaizi/Desktop/PA1/shellPrograms/listdir", args);
+  if (returnVal < 0)
+  {
+    printf("It did not work!\n");
+  }
   return 1;
 }
 
@@ -85,6 +104,12 @@ int shellCountLine(char **args)
   // 4. Print some kind of error message if it returns -1
   // 5. return 1 to the caller of shellCountLine if execvp fails to allow loop to continue
 
+  int returnVal = execvp("/Users/huaihaizi/Desktop/PA1/shellPrograms/countline", args);
+  if (returnVal < 0)
+  {
+    printf("It did not work!\n");
+  }
+
   return 1;
 }
 
@@ -101,10 +126,13 @@ int shellSummond(char **args)
   // 3. A successful execvp never returns, while a failed execvp returns -1
   // 4. Print some kind of error message if it returns -1
   // 5. return 1 to the caller of shellDaemonize if execvp fails to allow loop to continue
-
+  int returnVal = execvp("/Users/huaihaizi/Desktop/PA1/shellPrograms/summond", args);
+  if (returnVal < 0)
+  {
+    printf("It did not work!\n");
+  }
   return 1;
 }
-
 
 /**
  * Allows one to check daemon process
@@ -120,7 +148,11 @@ int shellCheckDaemon(char **args)
   // 3. A successful execvp never returns, while a failed execvp returns -1
   // 4. Print some kind of error message if it returns -1
   // 5. return 1 to the caller of shellCheckDaemon if execvp fails to allow loop to continue
-
+  int returnVal = execvp("/Users/huaihaizi/Desktop/PA1/shellPrograms/checkdaemon", args);
+  if (returnVal < 0)
+  {
+    printf("It did not work!\n");
+  }
   return 1;
 }
 
@@ -174,7 +206,6 @@ int shellExit(char **args)
 {
   return 0;
 }
-
 
 /*
   Builtin function implementations.
@@ -249,44 +280,45 @@ int shellExecuteInput(char **args)
   /** TASK 3 **/
 
   // 1. Check if args[0] is NULL. If it is, an empty command is entered, return 1
-  if(args[0]== NULL){
-    return 1;
-  }
   // 2. Otherwise, check if args[0] is in any of our builtin_commands, and that it is NOT cd, help, exit, or usage.
-  for(int i=4;i<=11;i++){
-    if(strcmp(args[0],builtin_commands[i])==0){
-      int address;
-      address = fork();
-      if (address <0){
-        printf("fork unsuccessful");
-      }
-      else if (address == 0){
-        builtin_commandFunc[i](args);
-        exit(1);
-
-        }
-        else if(address>0){
-          int status;
-          pid_t child_return_value = waitpid(address,&status,WUNTRACED);
-          printf("fork worked, waiting for child");
-          return child_return_value;
-        }
-
-      }
-
-
-    }
-    printf(" command doesn't exist");
-    return 1;
-
-    
-    
-  }
   // 3. If conditions in (2) are satisfied, perform fork(). Check if fork() is successful.
   // 4. For the child process, execute the appropriate functions depending on the command in args[0]. Pass char ** args to the function.
   // 5. For the parent process, wait for the child process to complete and fetch the child's return value.
   // 6. Return the child's return value to the caller of shellExecuteInput
   // 7. If args[0] is not in builtin_command, print out an error message to tell the user that command doesn't exist and return 1
+  if (args[0] == NULL)
+  {
+    printf("Empty command is entered");
+    return 1;
+  }
+  int maxIterations = numOfBuiltinFunctions();
+  for (int i = 4; i < maxIterations; i++)
+  {
+    if ((strcmp(args[0], builtin_commands[i])) == 0)
+    {
+      pid_t childAddress = fork();
+      if (childAddress < 0)
+      {
+        printf("CAUTION: Fork is unsuccessful");
+        exit(1);
+      }
+      else if (childAddress == 0)
+      {
+        builtin_commandFunc[i](args);
+        exit(1);
+      }
+      else if (childAddress > 0)
+      {
+        int childStatus;
+        pid_t childReturnVal = waitpid(childAddress, &childStatus, WUNTRACED);
+        // printf("Fork works, waiting for child!\n");
+        return childReturnVal;
+      }
+    }
+  }
+  printf("Command does not exist");
+  return 1;
+}
 
 /**
    Read line from stdin, return it to the Loop function to tokenize it
@@ -297,21 +329,22 @@ char *shellReadLine(void)
   // read one line from stdin using getline()
 
   // 1. Allocate a memory space to contain the string of input from stdin using malloc. Malloc should return a char* that persists even after this function terminates.
-  // i did not define the memory as a global variable within the header file.
-  char* memory = malloc(sizeof(char)*SHELL_BUFFERSIZE);
-  if(memory != 0){
-  size_t inputchar = SHELL_BUFFERSIZE;
-  getline(&memory,&inputchar,stdin);
-  return memory;
-  }else{
-    return NULL;
-  }
-
-
-
   // 2. Check that the char* returned by malloc is not NULL
   // 3. Fetch an entire line from input stream stdin using getline() function. getline() will store user input onto the memory location allocated in (1)
   // 4. Return the char*
+
+  inputMemory = (char *)malloc(sizeof(char) * SHELL_BUFFERSIZE);
+  if (inputMemory == NULL)
+  {
+    printf("Unable to allocate memory");
+    exit(1);
+  }
+  else
+  {
+    size_t inputChar = SHELL_BUFFERSIZE;
+    getline(&inputMemory, &inputChar, stdin);
+  }
+  return inputMemory;
 }
 
 /**
@@ -323,34 +356,32 @@ char **shellTokenizeInput(char *line)
 
   /** TASK 2 **/
   // 1. Allocate a memory space to contain pointers (addresses) to the first character of each word in *line. Malloc should return char** that persists after the function terminates.
-   //char *command[] =shellReadLine();
-   //*line = command; //pointer 'line' stores where the command starts
-   char **token_positions = malloc(sizeof(char *) * 8);
-   char *token = strtok(line, " ");
-   int index = 0;
- 
-   token_positions[index] = token;
-   index++;
-   while (token != NULL)
-   {
-       // Tokenize the rest of the command
-       token = strtok(NULL, " ");      //continue finding the next token
-       token_positions[index] = token; //store the position
-       index++;
-   }
- 
-   token_positions[index] = NULL; //dont forget to NULL terminate.
- 
-  return token_positions;
-  }
-
   // 2. Check that char ** that is returend by malloc is not NULL
-
   // 3. Tokenize the *line using strtok() function
   // 4. Return the char **
 
+  argAddresses = malloc(sizeof(char *) * SHELL_BUFFERSIZE);
+  if (argAddresses != NULL)
+  {
+    int index = 0;
+    char *token = strtok(line, SHELL_INPUT_DELIM);
 
+    while (token != NULL)
+    {
+      argAddresses[index] = token;
+      index++;
+      token = strtok(NULL, SHELL_INPUT_DELIM);
+    }
 
+    argAddresses[index] = NULL;
+  }
+  else
+  {
+    printf("The memory was not assigned properly");
+  }
+
+  return argAddresses;
+}
 
 /**
   The main loop where one reads line,
@@ -363,9 +394,8 @@ void shellLoop(void)
   char **args; // to tokenize them as arguments separated by spaces
   int status;  // to tell the shell program whether to terminate shell or not
 
-
   /** TASK 5 **/
-  //write a loop where you do the following: 
+  //write a loop where you do the following:
 
   // 1. print the message prompt
   // 2. clear the buffer and move the output to the console using fflush
@@ -375,30 +405,24 @@ void shellLoop(void)
 
   // 6. free memory location containing the strings of characters
   // 7. free memory location containing char* to the first letter of each word in the input string
-  // 8. check if shellExecuteInput returns 1. If yes, loop back to Step 1 and prompt user with new input. Otherwise, exit the shell. 
-
-
+  // 8. check if shellExecuteInput returns 1. If yes, loop back to Step 1 and prompt user with new input. Otherwise, exit the shell.
 }
 
 int main(int argc, char **argv)
 {
 
-//   printf("Shell Run successful. Running now: \n");
+  free(inputMemory);
+  free(argAddresses);
+  printf("Shell Run successful. Running now: \n");
 
-  // // Run command loop
-  // shellLoop();
-   
-//  char* line = shellReadLine();
-//  printf("The fetched line is : %s \n", line);
-printf("Shell Run successful. Running now: \n");
- 
- char* line = shellReadLine();
- printf("The fetched line is : %s \n", line);
- char** args = shellTokenizeInput(line);
- printf("The first token is %s \n", args[0]);
- printf("The second token is %s \n", args[1]);
- 
- shellExecuteInput(args);
- 
- return 0;
+  char *line = shellReadLine();
+  printf("The fetched line is : %s \n", line);
+
+  char **args = shellTokenizeInput(line);
+  printf("The first token is %s \n", args[0]);
+  printf("The second token is %s \n", args[1]);
+
+  shellExecuteInput(args);
+
+  return 0;
 }
