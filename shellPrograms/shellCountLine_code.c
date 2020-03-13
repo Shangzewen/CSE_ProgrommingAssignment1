@@ -15,8 +15,25 @@ int shellCountLine_code(char **args)
     // 6. Close the FILE*
     // 7. Print out how many lines are there in this particular filename
     // 8. Return 1, to exit program
+    char* BUFFER;
+    BUFFER = (char *)malloc(sizeof(char) * SHELL_BUFFERSIZE); 
+    size_t size = SHELL_BUFFERSIZE;
+    FILE* fp = fopen(args[1], "r"); 
+    int out =  getline(&BUFFER, &size, fp);
+    int count=0;
 
-    return 1;
+    while(out > 0){
+
+        out =  getline(&BUFFER,&size,fp);
+        //printf("%d \n",count);
+        count ++;
+        
+
+}
+
+fclose(fp);
+printf("There are %d many lines \n",count);
+return 1;
 }
 
 int main(int argc, char **args)
