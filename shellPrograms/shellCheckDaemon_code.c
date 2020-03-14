@@ -10,7 +10,10 @@ int shellCheckDaemon_code()
    sprintf(command, "ps -efj | grep summond  | grep -v tty > output.txt");
 
    // TODO: Execute the command using system(command) and check its return value
-   system(command);
+   int return_value =system(command);
+   if(return_value!=-1){
+
+
 
    free(command);
 
@@ -36,6 +39,7 @@ int shellCheckDaemon_code()
         
 
 }
+   
 
 fclose(fp);
 printf("There are %d many daemon \n",count);
@@ -46,10 +50,12 @@ printf("There are %d many daemon \n",count);
    {
       printf("There are in total of %d live daemons \n", live_daemons);
    }
+   
 
 
    // TODO: close any file pointers and free any statically allocated memory 
    free(BUFFER);
+   }
 
    return 1;
 }
